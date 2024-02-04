@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { Result } from '../scenario'
-import { Failure, failure, success } from '../scenario'
+import type { Result } from '../'
+import { Failure, failure, success } from '../'
 
 if (import.meta.vitest) {
   // Using an object in order to test for referential equality

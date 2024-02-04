@@ -1,4 +1,3 @@
-import type { Result } from '../scenario'
 import { Success } from '../success'
 
 export class Failure<T> {
@@ -48,7 +47,7 @@ export class Failure<T> {
     return this
   }
 
-  mapFailure<NewF>(mapper: (failureValue: T) => NewF): Result<never, NewF> {
+  mapFailure<NewF>(mapper: (failureValue: T) => NewF): Failure<NewF> {
     return new Failure(mapper(this.value))
   }
 
