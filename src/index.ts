@@ -1,1 +1,2 @@
-export { Failure, Result, Success } from './scenario'
+export type { Result } from './scenario'
+export { Failure, Success } from './scenario'

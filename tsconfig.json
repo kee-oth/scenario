@@ -4,7 +4,8 @@
     "lib": ["ESNext", "DOM"],
     "rootDir": "./src",
     "module": "ESNext",
-    "moduleResolution": "Node",
+    // "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "strict": true,
     "noImplicitReturns": true,
@@ -14,7 +15,9 @@
     "sourceMap": true,
     "esModuleInterop": true,
     "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "types": ["vitest/importMeta"],
+    "skipLibCheck": true
   },
   "include": ["src/**/*"],
   "exclude": ["**/*.test.ts", "test/**", "node_modules"]

@@ -2,6 +2,7 @@
 import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
+
 import packageJson from './package.json'
 
 const packageName = packageJson.name.split('/').pop() || packageJson.name
@@ -11,12 +12,17 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       formats: ['es', 'cjs', 'umd', 'iife'],
-      name: "index",
-      fileName: "index",
+      name: 'index',
+      fileName: 'index',
     },
   },
   plugins: [
     dts({ rollupTypes: true }),
   ],
-  test: {},
+  test: {
+    includeSource: ['src/**/*.{js,ts}'],
+  },
+  define: {
+    'import.meta.vitest': 'undefined',
+  },
 })
