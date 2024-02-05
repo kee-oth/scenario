@@ -51,7 +51,11 @@ export class Failure<T> {
     return new Failure(mapper(this.value))
   }
 
-  recover<S>(recoverer: (failure: T) => S): Success<S> {
+  // Should this only be recoverable to original Success value type?
+  // This would require Failure taking in two generics: one for its
+  // own type and one for the intended corresponding Success type.
+  // That would make for noisy types.
+  recover<NewT>(recoverer: (failureValue: T) => NewT): Success<NewT> {
     return new Success(recoverer(structuredClone(this.value)))
   }
 

@@ -15,20 +15,13 @@ if (import.meta.vitest) {
   }
 
   describe('the Success class', () => {
-    it('should be able to identify itself as a Success', () => {
+    it('should identify as a Success', () => {
       // Test
       const aResult = getResult('success')
 
       // Assert
       expect(aResult instanceof Success).toBe(true)
       expect(aResult.isSuccess()).toEqual(aResult instanceof Success)
-    })
-
-    it('should identify as a Success', () => {
-      // Test
-      const aResult = getResult('success')
-
-      // Assert
       expect(aResult.isSuccess()).toEqual(true)
     })
 

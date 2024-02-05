@@ -15,20 +15,13 @@ if (import.meta.vitest) {
   }
 
   describe('the Failure class', () => {
-    it('should be able to identify itself as a Failure', () => {
+    it('should identify as a Failure', () => {
       // Test
       const aResult = getResult('failure')
 
       // Assert
       expect(aResult instanceof Failure).toBe(true)
       expect(aResult.isFailure()).toEqual(aResult instanceof Failure)
-    })
-
-    it('should identify as a Failure', () => {
-      // Test
-      const aResult = getResult('failure')
-
-      // Assert
       expect(aResult.isFailure()).toEqual(true)
     })
 
@@ -104,7 +97,7 @@ if (import.meta.vitest) {
       const aResult = getResult('failure')
 
       // Test
-      const newSuccess = aResult.recover<SuccessValue>((value) => {
+      const newSuccess = aResult.recover((value) => {
         return value.number === 0 ? 'SUCCESS_1' : 'SUCCESS_2'
       })
 
