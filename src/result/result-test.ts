@@ -2,16 +2,6 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { Result } from '.'
 
-const getResult = <T>(kind: 'failure' | 'success', value: T) => {
-  const [success, failure] = Result.newKind<T, T>()
-  return kind === 'failure' ? failure(value) : success(value)
-}
-
-const getFailure = <T>(kind: 'failure' | 'success', value: T) => {
-  const [success, failure] = Result.newKind<string, T>()
-  return kind === 'failure' ? failure(value) : success('string')
-}
-
 if (import.meta.vitest) {
   describe('the Result class', () => {
     it('should identify as a Result', () => {
