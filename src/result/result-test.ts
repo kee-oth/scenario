@@ -169,62 +169,62 @@ if (import.meta.vitest) {
       expect(callback).not.toHaveBeenCalled()
     })
 
-    it('should be tappable', () => {
+    it('should be able to run an effect', () => {
       // Setup
       const callback = vi.fn()
       const someResult = Result.failure(0)
 
       // Test
-      someResult.tap(callback)
+      someResult.runEffect(callback)
 
       // Assert
       expect(callback).toHaveBeenCalledOnce()
       expect(callback).toHaveBeenCalledWith(someResult)
     })
 
-    it('should be Success tappable when a Success', () => {
+    it('should be able to run an effect only when a Success', () => {
       // Setup
       const callback = vi.fn()
       const someResult = Result.success(0)
 
       // Test
-      someResult.tapSuccess(callback)
+      someResult.runEffectWhenSuccess(callback)
 
       // Assert
       expect(callback).toHaveBeenCalledOnce()
     })
 
-    it('should  be Failure tappable when a Failure', () => {
+    it('should be able to run an effect only when a Failure', () => {
       // Setup
       const callback = vi.fn()
       const someResult = Result.failure(0)
 
       // Test
-      someResult.tapFailure(callback)
+      someResult.runEffectWhenFailure(callback)
 
       // Assert
       expect(callback).toHaveBeenCalledOnce()
     })
 
-    it('should not be Success tappable when a Failure', () => {
+    it('should be able to not run an effect when a Failure', () => {
       // Setup
       const callback = vi.fn()
       const someResult = Result.failure(0)
 
       // Test
-      someResult.tapSuccess(callback)
+      someResult.runEffectWhenSuccess(callback)
 
       // Assert
       expect(callback).not.toHaveBeenCalled()
     })
 
-    it('should not be Failure tappable when a Success', () => {
+    it('should be able to not run an effect when a Success', () => {
       // Setup
       const callback = vi.fn()
       const someResult = Result.success(0)
 
       // Test
-      someResult.tapFailure(callback)
+      someResult.runEffectWhenFailure(callback)
 
       // Assert
       expect(callback).not.toHaveBeenCalled()

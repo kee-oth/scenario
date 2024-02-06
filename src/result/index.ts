@@ -91,32 +91,32 @@ export class Result<S, F> {
   }
 
   /*
-  `tap` lets you access the `Result` without
+  `runEffect` lets you access the `Result` without
   doing anything to the `Result` itself.
 
-  This is similar to `debug` but `tap` will always
+  This is similar to `debug` but `runEffect` will always
   run. This is useful for logging or other necessary
   side-effect work.
   */
-  tap(fn: (result: Result<S, F>) => void): Result<S, F> {
-    fn(structuredClone(this))
+  runEffect(effect: (result: Result<S, F>) => void): Result<S, F> {
+    effect(structuredClone(this))
     return this
   }
 
-  tapFailure(fn: (failureValue: F) => void): Result<S, F> {
+  runEffectWhenFailure(effect: (failureValue: F) => void): Result<S, F> {
     if (this.isFailure()) {
-      fn(structuredClone(this.failureValue))
+      effect(structuredClone(this.failureValue))
     }
     return this
   }
 
   /*
-    `tapSuccess` lets you access the `value` of a `Success`
+    `runEffectWhenSuccess` lets you access the `value` of a `Success`
     without doing anything to anything to the `Success` itself.
   */
-  tapSuccess(fn: (successValue: S) => void): Result<S, F> {
+  runEffectWhenSuccess(effect: (successValue: S) => void): Result<S, F> {
     if (this.isSuccess()) {
-      fn(structuredClone(this.successValue))
+      effect(structuredClone(this.successValue))
     }
     return this
   }

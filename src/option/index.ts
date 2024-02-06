@@ -7,9 +7,9 @@ export class Option<V> {
   // private currentValue: NonNullable<V> // is this possible to do? We'd have to keep _some_ value in here...
 
   private constructor(value?: V) {
-    // If we pass in `undefined` or `null`, we want to set `__value` to `null`.
+    // If we pass in `undefined` or `null`, we want to set `currentValue` to `null`.
     // That way, other useful falsey values like empty string and `0` can still
-    // be used as the `__value`
+    // be used as the `currentValue`
     this.currentValue = value ?? null as V
   }
 
@@ -87,19 +87,19 @@ export class Option<V> {
   }
 
   /*
-  `tap` lets you access the `Result` without
-  doing anything to the `Result` itself.
+  `runEffect` lets you access the `Option` without
+  doing anything to the `Option` itself.
 
   This is similar to `debug` but `tap` will always
   run. This is useful for logging or other necessary
   side-effect work.
   */
-  tap(fn: (result: Option<V>) => void): Option<V> {
-    fn(this.clone())
+  runEffect(effect: (result: Option<V>) => void): Option<V> {
+    effect(this.clone())
     return this
   }
 
-  tapNone(fn: () => void): Option<V> {
+  runEffectWhenNone(fn: () => void): Option<V> {
     if (this.isNone()) {
       fn()
     }
@@ -107,10 +107,10 @@ export class Option<V> {
   }
 
   /*
-    `tapSome` lets you access the `value` of a `Success`
-    without doing anything to anything to the `Success` itself.
+    `runEffectWhenSome` lets you access the `value` of a `Some`
+    without doing anything to anything to the `Some` itself.
   */
-  tapSome(fn: (value: V) => void): Option<V> {
+  runEffectWhenSome(fn: (value: V) => void): Option<V> {
     if (this.isSome()) {
       fn(this.cloneValue())
     }

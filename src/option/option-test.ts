@@ -199,7 +199,7 @@ if (import.meta.vitest) {
       expect(callback).not.toHaveBeenCalled()
     })
 
-    it('should be tappable', () => {
+    it('should be able to run an effect', () => {
       // Setup
       const noneCallback = vi.fn()
       const someCallback = vi.fn()
@@ -207,8 +207,8 @@ if (import.meta.vitest) {
       const someOption = Option.some(0)
 
       // Test
-      noneOption.tap(noneCallback)
-      someOption.tap(someCallback)
+      noneOption.runEffect(noneCallback)
+      someOption.runEffect(someCallback)
 
       // Assert
       expect(noneCallback).toHaveBeenCalledOnce()
@@ -217,50 +217,50 @@ if (import.meta.vitest) {
       expect(someCallback).toHaveBeenCalledWith(someOption)
     })
 
-    it('should be Some tappable when a Some', () => {
+    it('should be able to run an effect only when a Some', () => {
       // Setup
       const callback = vi.fn()
       const option = Option.some(0)
 
       // Test
-      option.tapSome(callback)
+      option.runEffectWhenSome(callback)
 
       // Assert
       expect(callback).toHaveBeenCalledOnce()
       expect(callback).toHaveBeenCalledWith(0)
     })
 
-    it('should be None tappable when a None', () => {
+    it('should be able to run an effect only when a None', () => {
       // Setup
       const callback = vi.fn()
       const someResult = Option.none()
 
       // Test
-      someResult.tapNone(callback)
+      someResult.runEffectWhenNone(callback)
 
       // Assert
       expect(callback).toHaveBeenCalledOnce()
     })
 
-    it('should not be Some tappable when a None', () => {
+    it('should be able to not run an effect when a None', () => {
       // Setup
       const callback = vi.fn()
       const someResult = Option.none()
 
       // Test
-      someResult.tapSome(callback)
+      someResult.runEffectWhenSome(callback)
 
       // Assert
       expect(callback).not.toHaveBeenCalled()
     })
 
-    it('should not be Some tappable when a None', () => {
+    it('should be able to not run an effect when a Some', () => {
       // Setup
       const callback = vi.fn()
       const someResult = Option.some(0)
 
       // Test
-      someResult.tapNone(callback)
+      someResult.runEffectWhenNone(callback)
 
       // Assert
       expect(callback).not.toHaveBeenCalled()
