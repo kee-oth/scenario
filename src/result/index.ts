@@ -28,6 +28,38 @@ export class Result<S, F> {
     return [success, failure]
   }
 
+  // Allows devs to create a Result from arbitrary data, depending on whether
+  // the passed in value returns (undefined | null) or something else.
+  // TODO: test
+  static fromNullish<D, T, U>(
+    data: D,
+    valueOfFailureIfNullish: U,
+    transformer: (data: D) => T,
+  ): Result<T, U> {
+    const value = transformer(data) ?? null
+    if (value !== null) {
+      return Result.success(value)
+    }
+
+    return Result.failure(valueOfFailureIfNullish)
+  }
+
+  // TODO: test
+  static fromValidator<T, U>(
+    validator: (valueToTest: T) => boolean,
+    valueToTest: T,
+    valueIfFailure: U,
+  ): Result<T, U> {
+    if (validator(valueToTest)) {
+      return Result.success(valueToTest)
+    }
+
+    return Result.failure(valueIfFailure)
+  }
+
+  // TODO:
+  // static fromError
+
   static success<T, U = never>(value: T) {
     return new Result<T, U>({ isSuccess: true, successValue: value })
   }
@@ -35,6 +67,16 @@ export class Result<S, F> {
   static failure<T, U = never>(value: T) {
     return new Result<U, T>({ isSuccess: false, failureValue: value })
   }
+
+  // TODO
+  // private clone(): Result<S, F> {
+  // }
+
+  // private cloneFailureValue(): S {
+  // }
+
+  // private cloneSuccessValue(): F {
+  // }
 
   debug(
     shouldRun: (() => boolean) | boolean,
@@ -48,12 +90,12 @@ export class Result<S, F> {
     return this
   }
 
-  isSuccess(): this is Result<S, never> {
-    return this.successValue !== undefined
-  }
-
   isFailure(): this is Result<never, F> {
     return !this.isSuccess()
+  }
+
+  isSuccess(): this is Result<S, never> {
+    return this.successValue !== undefined
   }
 
   map<NewS>(mapper: (successValue: S) => NewS): Result<NewS, F> {
@@ -72,14 +114,26 @@ export class Result<S, F> {
     }
   }
 
+  // TODO
+  // This is a way to shortcircuit and just throw an error when None
+  // Can continue along the path otherwise. Kinda like Rust's `?`
+  // that sends errors upward
+  orError(fn: (result: Result<S, F>) => never): Result<S, F> {
+    if (this.isFailure()) {
+      fn(this) // TODO: clone
+    }
+
+    return this
+  }
+
   recover(
-    recoverer: (failureValue: F) => S,
+    recoverWith: (failureValue: F) => S,
   ): Result<S, F> {
     if (this.isSuccess()) {
       return this
     }
 
-    return Result.success(recoverer(structuredClone(this.failureValue)))
+    return Result.success(recoverWith(structuredClone(this.failureValue)))
   }
 
   reduce<C, R>(
@@ -119,6 +173,22 @@ export class Result<S, F> {
       effect(structuredClone(this.successValue))
     }
     return this
+  }
+
+  // TODO: test
+  validate(
+    validator: (successValue: S) => boolean,
+    valueIfFailure: F,
+  ): Result<S, F> {
+    if (this.isFailure()) {
+      return this
+    }
+
+    if (validator(structuredClone(this.successValue))) {
+      return this
+    }
+
+    return Result.failure(valueIfFailure)
   }
 
   // Don't encourage using this one

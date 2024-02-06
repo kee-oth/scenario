@@ -69,14 +69,25 @@ export class Option<V> {
     return Option.none<NewV>() // Need to return a new None so that `V` can get reassigned to `NewV`
   }
 
+  // This is a way to shortcircuit and just throw an error when None
+  // Can continue along the path otherwise. Kinda like Rust's `?`
+  // that sends errors upward
+  orError(fn: (option: Option<V>) => never): Option<V> {
+    if (this.isNone()) {
+      fn(this.clone())
+    }
+
+    return this
+  }
+
   recover(
-    recoverer: () => V,
+    recoverWith: () => V,
   ): Option<V> {
     if (this.isSome()) {
       return this
     }
 
-    return Option.some(recoverer())
+    return Option.some(recoverWith())
   }
 
   reduce<C, R>(
@@ -117,6 +128,21 @@ export class Option<V> {
     return this
   }
 
+  // TODO: test
+  validate(
+    validator: (value: V) => boolean,
+  ): Option<V> {
+    if (this.isNone()) {
+      return this
+    }
+
+    if (validator(this.cloneValue())) {
+      return this
+    }
+
+    return Option.none()
+  }
+
   valueOr(value: V): V {
     return this.isSome() ? this.cloneValue() : value
   }
@@ -133,17 +159,6 @@ export class Option<V> {
     }
 
     return this.cloneValue()
-  }
-
-  // This is a way to shortcircuit and just throw an error when None
-  // Can continue along the path otherwise. Kinda like Rust's `?`
-  // that sends errors upward
-  orError(fn: (option: Option<V>) => never): Option<V> {
-    if (this.isNone()) {
-      fn(this.clone())
-    }
-
-    return this
   }
 }
 
