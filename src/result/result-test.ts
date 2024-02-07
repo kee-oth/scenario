@@ -24,6 +24,64 @@ if (import.meta.vitest) {
       expect(successResult.isSuccess()).toBe(true)
     })
 
+    it('should be able to create a Result from nullish value', () => {
+      const getTestData = (returnNull: boolean) => returnNull ? null : 0
+      // Using `null` as value given to `fromNullish`
+      const failureResult1 = Result.fromNullish(getTestData(true), 1, (data) => data ?? null)
+
+      // Using `undefined` as value given to `fromNullish`
+      const failureResult2 = Result.fromNullish(getTestData(true), 1, (data) => data ?? undefined)
+
+      const successResult = Result.fromNullish(getTestData(false), 1, (data) => data ?? null)
+
+      expect(successResult.isSuccess()).toBe(true)
+      expect(successResult.valueOr(1)).toBe(0)
+
+      expect(failureResult1.isFailure()).toBe(true)
+      expect(failureResult1.value()).toBe(1)
+      expect(failureResult2.isFailure()).toBe(true)
+      expect(failureResult2.value()).toBe(1)
+    })
+
+    it('should allow accessing the value with a provided fallback value', () => {
+      const fallbackValue = Result.failure<number, number>(0).valueOr(1)
+      const successValue = Result.success(0).valueOr(2)
+
+      expect(fallbackValue).toBe(1)
+      expect(successValue).toBe(0)
+    })
+
+    it('should allow accessing the value with a provided function returning a fallback value', () => {
+      const fallbackValue = Result.failure<number, number>(0).valueOrCompute(() => 1)
+      const successValue = Result.success(0).valueOrCompute(() => 2)
+
+      expect(fallbackValue).toBe(1)
+      expect(successValue).toBe(0)
+    })
+
+    it('should allow validating the success value to continue as a Success', () => {
+      const failureResult = Result.failure<number, number>(0)
+      const successResult = Result.success<number, number>(0)
+
+      // Successful validation
+      const failureResultSuccessfulValidation = failureResult.validate((successValue) => successValue === 0, 10)
+      expect(failureResultSuccessfulValidation.isFailure()).toBe(true)
+      expect(failureResultSuccessfulValidation.value()).toBe(0)
+
+      const successResultSuccessfulValidation = successResult.validate((successValue) => successValue === 0, 10)
+      expect(successResultSuccessfulValidation.isSuccess()).toBe(true)
+      expect(successResultSuccessfulValidation.value()).toBe(0)
+
+      // Unsuccessful validation
+      const failureResultFailedValidation = failureResult.validate((successValue) => successValue === 0, 10)
+      expect(failureResultFailedValidation.isFailure()).toBe(true)
+      expect(failureResultFailedValidation.value()).toBe(0)
+
+      const successResultFailedValidation = successResult.validate((successValue) => successValue > 0, 10)
+      expect(successResultFailedValidation.isSuccess()).toBe(false)
+      expect(successResultFailedValidation.value()).toBe(10)
+    })
+
     it('should be mappable if a Success', () => {
       const successResult = Result.success(0)
 
@@ -108,10 +166,6 @@ if (import.meta.vitest) {
     })
 
     it('should should allow access to the success value when given a fallback value', () => {
-      // Need to type here, or TS will correctly point out that with a `never` as the
-      // default, we won't be able to switch to having another type for the `S` generic
-      // So we need to tell TS, "hey this can actually be something" when we first
-      // initialize the Failure
       const failureResult = Result.failure<number, number>(0)
       const successResult = Result.success(0)
 
@@ -123,10 +177,6 @@ if (import.meta.vitest) {
     })
 
     it('should should allow access to the success value when given a function that returns with a fallback value', () => {
-      // Need to type here, or TS will correctly point out that with a `never` as the
-      // default, we won't be able to switch to having another type for the `S` generic
-      // So we need to tell TS, "hey this can actually be something" when we first
-      // initialize the Failure
       const failureResult = Result.failure<number, string>(0)
       const successResult = Result.success(0)
 
@@ -135,6 +185,69 @@ if (import.meta.vitest) {
 
       expect(failureValue).toBe('10')
       expect(successValue).toBe(0)
+    })
+
+    it('should be able to create a Result depending on validation result', () => {
+      const failureResult = Result.fromValidator((valueIfSuccess) => {
+        return valueIfSuccess !== 0
+      }, 0, 100)
+
+      const successResult = Result.fromValidator((valueIfSuccess) => {
+        return valueIfSuccess === 0
+      }, 0, 100)
+
+      expect(failureResult.isFailure()).toBe(true)
+      expect(failureResult.value()).toBe(100)
+      expect(successResult.isSuccess()).toBe(true)
+      expect(successResult.value()).toBe(0)
+    })
+
+    it('should be errorable when Failure', () => {
+      const result = Result.failure(0)
+
+      const errorableFunction = () => result.valueOrError(() => {
+        throw new Error('Some error!')
+      })
+
+      const errorableFunction2 = () => result.orError(() => {
+        throw new Error('Some error!')
+      })
+
+      expect(errorableFunction).toThrowError()
+      expect(errorableFunction2).toThrowError()
+    })
+
+    it('should not be errorable when Success', () => {
+      const result = Result.success(0)
+
+      const value = result.valueOrError(() => {
+        throw new Error('Some error!')
+      })
+
+      const successResult = result.orError(() => {
+        throw new Error('Some error!')
+      })
+
+      expect(value).toBe(0)
+      expect(successResult.isSuccess()).toBe(true)
+      expect(successResult).toEqual(result)
+    })
+
+    it('should allow creation from throwable functions', () => {
+      const throwableFunction = (shouldError: boolean): number | never => {
+        if (shouldError) {
+          throw new Error('Some error!')
+        }
+
+        return 0
+      }
+      const failureResult = Result.fromError(() => throwableFunction(true), 10)
+      const someResult = Result.fromError(() => throwableFunction(false), 20)
+
+      expect(failureResult.isFailure()).toBe(true)
+      expect(failureResult.value()).toBe(10)
+      expect(someResult.isSuccess()).toBe(true)
+      expect(someResult.value()).toBe(0)
     })
 
     it('should be debuggable when `debug` should run', () => {
@@ -156,14 +269,14 @@ if (import.meta.vitest) {
     it('should not be debuggable when `debug` should not run', () => {
       // Setup
       const callback = vi.fn()
-      const someFailure = Result.failure(0)
-      const someSuccess = Result.success(0)
+      const failureResult = Result.failure(0)
+      const successResult = Result.success(0)
 
       // Test
-      someFailure.debug(false, callback)
-      someFailure.debug(() => false, callback)
-      someSuccess.debug(false, callback)
-      someSuccess.debug(() => false, callback)
+      failureResult.debug(false, callback)
+      failureResult.debug(() => false, callback)
+      successResult.debug(false, callback)
+      successResult.debug(() => false, callback)
 
       // Assert
       expect(callback).not.toHaveBeenCalled()
@@ -172,23 +285,23 @@ if (import.meta.vitest) {
     it('should be able to run an effect', () => {
       // Setup
       const callback = vi.fn()
-      const someResult = Result.failure(0)
+      const result = Result.failure(0)
 
       // Test
-      someResult.runEffect(callback)
+      result.runEffect(callback)
 
       // Assert
       expect(callback).toHaveBeenCalledOnce()
-      expect(callback).toHaveBeenCalledWith(someResult)
+      expect(callback).toHaveBeenCalledWith(result)
     })
 
     it('should be able to run an effect only when a Success', () => {
       // Setup
       const callback = vi.fn()
-      const someResult = Result.success(0)
+      const result = Result.success(0)
 
       // Test
-      someResult.runEffectWhenSuccess(callback)
+      result.runEffectWhenSuccess(callback)
 
       // Assert
       expect(callback).toHaveBeenCalledOnce()
@@ -197,10 +310,10 @@ if (import.meta.vitest) {
     it('should be able to run an effect only when a Failure', () => {
       // Setup
       const callback = vi.fn()
-      const someResult = Result.failure(0)
+      const result = Result.failure(0)
 
       // Test
-      someResult.runEffectWhenFailure(callback)
+      result.runEffectWhenFailure(callback)
 
       // Assert
       expect(callback).toHaveBeenCalledOnce()
@@ -209,10 +322,10 @@ if (import.meta.vitest) {
     it('should be able to not run an effect when a Failure', () => {
       // Setup
       const callback = vi.fn()
-      const someResult = Result.failure(0)
+      const result = Result.failure(0)
 
       // Test
-      someResult.runEffectWhenSuccess(callback)
+      result.runEffectWhenSuccess(callback)
 
       // Assert
       expect(callback).not.toHaveBeenCalled()
@@ -221,10 +334,10 @@ if (import.meta.vitest) {
     it('should be able to not run an effect when a Success', () => {
       // Setup
       const callback = vi.fn()
-      const someResult = Result.success(0)
+      const result = Result.success(0)
 
       // Test
-      someResult.runEffectWhenFailure(callback)
+      result.runEffectWhenFailure(callback)
 
       // Assert
       expect(callback).not.toHaveBeenCalled()

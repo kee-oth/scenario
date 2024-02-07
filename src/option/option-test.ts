@@ -145,6 +145,7 @@ if (import.meta.vitest) {
       })
 
       expect(value).toBe(0)
+      expect(sameOption.isSome()).toBe(true)
       expect(sameOption).toEqual(option)
     })
 

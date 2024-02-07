@@ -1,10 +1,5 @@
-// Using `isSuccess` lets us be able to pass `undefined` to
-// `successValue` and still understand that the user is looking
-// for a Success
-
 export class Option<V> {
   private currentValue: V
-  // private currentValue: NonNullable<V> // is this possible to do? We'd have to keep _some_ value in here...
 
   private constructor(value?: V) {
     // If we pass in `undefined` or `null`, we want to set `currentValue` to `null`.
@@ -66,12 +61,12 @@ export class Option<V> {
       return Option.some(mapper(this.cloneValue()))
     }
 
-    return Option.none<NewV>() // Need to return a new None so that `V` can get reassigned to `NewV`
+    return Option.none<NewV>()
   }
 
-  // This is a way to shortcircuit and just throw an error when None
-  // Can continue along the path otherwise. Kinda like Rust's `?`
-  // that sends errors upward
+  // This is a way to shortcircuit and just throw an error
+  // when None. Otherwise we continue along per usual.
+  // Similar to Rust's `?` operator that sends errors upward.
   orError(fn: (option: Option<V>) => never): Option<V> {
     if (this.isNone()) {
       fn(this.clone())
@@ -151,8 +146,6 @@ export class Option<V> {
     return this.isSome() ? this.cloneValue() : fn()
   }
 
-  // useful to just cancel the program, this can be accomplished via `valueOrCompute` though
-  // but we did include `from` as a convenience method that helps relate developer intent
   valueOrError(fn: (option: Option<V>) => never): V {
     if (this.isNone()) {
       fn(this.clone())
@@ -161,22 +154,3 @@ export class Option<V> {
     return this.cloneValue()
   }
 }
-
-// const aNone = Option.some(3)
-// .valueOr(4)
-
-// Docs notes, unlike Result, Option is opinionated about what it'll accept as a value for Some
-// this means that you can call `Option.some(someValue)` and potentially get a None. This is
-// Result where you can define a Success to hold any value.
-
-// Should this be the case? Probably. Just the method name is weird, so lets offer `.from` as a convenience API
-// encourage to use `some` where it's cleary a Some, `none` where it's clearly a `none` and `from` when it's a
-// runtime/dynamic thing
-
-// if (aNone.isSome()) {
-//   aNone.value() // TODO: this shouldn't be null after we check?
-// }
-
-// if (aNone.isNone()) {
-//   aNone.value() // this works like we want (but maybe it should identify as never?)
-// }
