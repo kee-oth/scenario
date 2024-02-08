@@ -251,95 +251,74 @@ if (import.meta.vitest) {
     })
 
     it('should be debuggable when `debug` should run', () => {
-      // Setup
       const callback = vi.fn()
       const someFailure = Result.failure(0)
       const someSuccess = Result.success(0)
 
-      // Test
       someFailure.debug(true, callback)
       someFailure.debug(() => true, callback)
       someSuccess.debug(true, callback)
       someSuccess.debug(() => true, callback)
 
-      // Assert
       expect(callback).toHaveBeenCalledTimes(4)
     })
 
     it('should not be debuggable when `debug` should not run', () => {
-      // Setup
       const callback = vi.fn()
       const failureResult = Result.failure(0)
       const successResult = Result.success(0)
 
-      // Test
       failureResult.debug(false, callback)
       failureResult.debug(() => false, callback)
       successResult.debug(false, callback)
       successResult.debug(() => false, callback)
 
-      // Assert
       expect(callback).not.toHaveBeenCalled()
     })
 
     it('should be able to run an effect', () => {
-      // Setup
       const callback = vi.fn()
       const result = Result.failure(0)
 
-      // Test
       result.runEffect(callback)
 
-      // Assert
       expect(callback).toHaveBeenCalledOnce()
       expect(callback).toHaveBeenCalledWith(result)
     })
 
     it('should be able to run an effect only when a Success', () => {
-      // Setup
       const callback = vi.fn()
       const result = Result.success(0)
 
-      // Test
       result.runEffectWhenSuccess(callback)
 
-      // Assert
       expect(callback).toHaveBeenCalledOnce()
     })
 
     it('should be able to run an effect only when a Failure', () => {
-      // Setup
       const callback = vi.fn()
       const result = Result.failure(0)
 
-      // Test
       result.runEffectWhenFailure(callback)
 
-      // Assert
       expect(callback).toHaveBeenCalledOnce()
     })
 
     it('should be able to not run an effect when a Failure', () => {
-      // Setup
       const callback = vi.fn()
       const result = Result.failure(0)
 
-      // Test
       result.runEffectWhenSuccess(callback)
 
-      // Assert
       expect(callback).not.toHaveBeenCalled()
     })
 
     it('should be able to not run an effect when a Success', () => {
-      // Setup
       const callback = vi.fn()
       const result = Result.success(0)
 
-      // Test
       result.runEffectWhenFailure(callback)
 
-      // Assert
       expect(callback).not.toHaveBeenCalled()
     })
   })

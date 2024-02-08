@@ -1,3 +1,9 @@
+/**
+ * The Option class represents the prescense or absence of a value.
+ * Use it when you want to safely work with data that _may_ or
+ * _may not_ be there.
+ * @class
+ */
 export class Option<V> {
   private currentValue: V
 
@@ -16,10 +22,42 @@ export class Option<V> {
     return structuredClone(this.currentValue)
   }
 
+  /**
+   * Creates an Option from `value`.
+   *
+   * If `value` is `undefined` or `null`,
+   * a None will be created and returned.
+   * Otherwise, a Some containing the passed in `value` will be created and returned.
+   *
+   * @example
+   * const noneOption = Option.from(null)
+   *
+   * const someOption = Option.from(100)
+   */
   static from<T = never>(value: T) {
-    return Option.some(value)
+    return new Option<T>(value)
   }
 
+  /**
+   * Creates an Option given a function which can throw.
+   *
+   * If `throwable` `throw`s or returns `undefined` or `null`,
+   * a None will be created and returned.
+   * Otherwise, a Some containing the return value of `throwable` will be created and returned.
+   *
+   * @example
+   *  const throwableFunction = (shouldError: boolean): number | never => {
+   *    if (shouldError) {
+   *      throw new Error('Some error!')
+   *    }
+   *    return 100
+   *  }
+   *  const noneOption = Option.fromError(() => throwableFunction(true))
+   *  noneOption.valueOr(200) // `200`
+   *
+   *  const someOption = Option.fromError(() => throwableFunction(false))
+   *  someOption.valueOr(200) // `100`
+   */
   static fromError<T>(throwable: (() => T | never)): Option<T> {
     try {
       return Option.some(throwable())
@@ -85,26 +123,69 @@ export class Option<V> {
     return Option.some(recoverWith())
   }
 
+  /**
+   * Similar to `Array.reduce`. An initial value (`context`)
+   * and the value (or `undefined` if None) are passed to a
+   * callback (`reducer`) and gives the option to transform
+   * to a different type.
+   *
+   * Though you could choose to close-over values instead of passing
+   * them in as `context`, doing so makes it more difficult to test
+   * the functions you may need to pass as `reducer` as they are no
+   * longer pure functions.
+   *
+   * @example
+   * // None usage
+   * const noneOption = Option.from<never>(null)
+   * noneOption.reduce((context, value) => !!(context && value), 100) // false
+   *
+   * // Some usage
+   * const someOption = Option.some(10)
+   * someOption.reduce((context, value) => !!(context && value), 100) // true
+   */
   reduce<C, R>(
-    reducer: (context: C, result: Option<V>) => R,
+    reducer: (context: C, value?: V) => R,
     context: C,
+  ): R
+  reduce<C, R>(
+    reducer: (context?: C, value?: V) => R,
+    context?: C,
   ): R {
-    return reducer(context, this.clone())
+    return reducer(context, this.clone().valueOrUndefined())
   }
 
-  /*
-  `runEffect` lets you access the `Option` without
-  doing anything to the `Option` itself.
-
-  This is similar to `debug` but `tap` will always
-  run. This is useful for logging or other necessary
-  side-effect work.
-  */
+  /**
+   * Let's you run an arbitrary function without affecting anything.
+   * Useful for running side-effects like logging or analytics.
+   *
+   * @example
+   * // None usage
+   * const noneOption = Option.from(null)
+   * noneOption.runEffect((value) => sendToLog(value)) // will run
+   *
+   * // Some usage
+   * const someOption = Option.from(100)
+   * someOption.runEffect((value) => sendToLog(value)) // will run
+   */
   runEffect(effect: (result: Option<V>) => void): Option<V> {
     effect(this.clone())
     return this
   }
 
+  /**
+   * Let's you run an arbitrary function without affecting anything
+   * when Option is None. Useful for running side-effects like logging
+   * or analytics.
+   *
+   * @example
+   * // None usage
+   * const noneOption = Option.from(null)
+   * noneOption.runEffectWhenNone((value) => sendToLog(value)) // will run
+   *
+   * // Some usage
+   * const someOption = Option.from(100)
+   * someOption.runEffectWhenNone((value) => sendToLog(value)) // won't run
+   */
   runEffectWhenNone(fn: () => void): Option<V> {
     if (this.isNone()) {
       fn()
@@ -112,10 +193,20 @@ export class Option<V> {
     return this
   }
 
-  /*
-    `runEffectWhenSome` lets you access the `value` of a `Some`
-    without doing anything to anything to the `Some` itself.
-  */
+  /**
+   * Gives access to the Option value when Some without
+   * doing anything else. Useful for running side-effects
+   * like logging or analytics.
+   *
+   * @example
+   * // None usage
+   * const noneOption = Option.from(null)
+   * noneOption.runEffectWhenSome((value) => sendToLog(value)) // won't run
+   *
+   * // Some usage
+   * const someOption = Option.from(100)
+   * someOption.runEffectWhenSome((value) => sendToLog(value)) // will run
+   */
   runEffectWhenSome(fn: (value: V) => void): Option<V> {
     if (this.isSome()) {
       fn(this.cloneValue())
@@ -123,7 +214,22 @@ export class Option<V> {
     return this
   }
 
-  // TODO: test
+  /**
+   * Validates a Some Option's value against `validator`. If
+   * `validator` passes (returns `true`) then we return
+   * the same Option. Otherwise, we return a None Option.
+   *
+   * All operations are bypassed if Option is None.
+   *
+   * @example
+   * // None usage
+   * const noneOption = Option.from(null)
+   * noneOption.valueOrCompute(() => 200) // `200`
+   *
+   * // Some usage
+   * const someOption = Option.from(100)
+   * someOption.valueOrCompute(() => 200) // `100`
+   */
   validate(
     validator: (value: V) => boolean,
   ): Option<V> {
@@ -142,8 +248,39 @@ export class Option<V> {
     return this.isSome() ? this.cloneValue() : value
   }
 
-  valueOrCompute(fn: () => V): V {
-    return this.isSome() ? this.cloneValue() : fn()
+  /**
+   * Returns the value if Some, otherwise, returns `undefined`.
+   * This is useful for retreiving Option values and passing
+   * them to functions with optional parameters.
+   *
+   * @example
+   * // None usage
+   * const noneOption = Option.from(null)
+   * noneOption.valueOrUndefined() // `undefined`
+   *
+   * // Some usage
+   * const someOption = Option.from(100)
+   * someOption.valueOrUndefined() // `100`
+   */
+  valueOrUndefined() {
+    return this.isSome() ? this.cloneValue() : undefined
+  }
+
+  /**
+   * Returns the value if Some, otherwise, returns the result
+   * of calling `computeValue`.
+   *
+   * @example
+   * // None usage
+   * const noneOption = Option.from(null)
+   * noneOption.valueOrCompute(() => 200) // `200`
+   *
+   * // Some usage
+   * const someOption = Option.from(100)
+   * someOption.valueOrCompute(() => 200) // `100`
+   */
+  valueOrCompute(computeValue: () => V): V {
+    return this.isSome() ? this.cloneValue() : computeValue()
   }
 
   valueOrError(fn: (option: Option<V>) => never): V {

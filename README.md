@@ -17,3 +17,157 @@ Please open an issue if you want to
 Scenario is a Result and Option type library that lets you safely handle potential failures and abscense of values within you JavaScript or TypeScript application.
 
 Scenario has 0 dependencies and is very small (less than 1kb!).
+
+### Option
+
+An Option represent the potential abscense of a value. They provide safe ways for you to access and operate on these potentially absent values.
+
+An Option representing a guaranteed value is called a Some.
+An Option representing an absent value is called a None.
+
+#### Examples
+
+Please see the source code and test files for further documentation usage examples.
+
+##### Creating a Some Option
+```ts
+// Options.from will be a Some if the passed in
+// value is anything but `undefined` or `null`.
+// Otherwise, it will be a None.
+const option = Option.from(0) // `option` is a Some
+// or Option.some(0)
+
+const newOption = option.map((value) => value + 10)
+
+// Check if newOption is a Some
+newOption.isSome() // true
+
+// Check if newOption is a None
+newOption.isNone() // false
+
+// In case of a Some, retrieve the value.
+// Otherwise, in case of a None, retrieve
+// the fallback (`20`).
+newOption.valueOr(20) // 10
+
+// In case of a Some, retrieve the value.
+// Otherwise, in case of a None, retrieve
+// the result of the passed in function.
+newOption.valueOr(() => 20) // 10
+```
+
+##### Creating a None Option
+```ts
+const option = Option.from(null) // `option` is a Nome
+// or Option.none()
+
+const newOption = option.map((value) => value + 10)
+
+newOption.isSome() // false
+
+// Check if newOption is a None
+newOption.isNone() // true
+
+// In case of a Some, retrieve the value.
+// Otherwise, in case of a None, retrieve
+// the fallback (`20`).
+newOption.valueOr(20) // 20
+
+// In case of a Some, retrieve the value.
+// Otherwise, in case of a None, retrieve
+// the result of the passed in function.
+newOption.valueOr(() => 20) // 20
+```
+
+##### Returning an Option from a function
+```ts
+const getFirstItem = <T>(items: T[]): Option<T> => {
+  const [firstItem] = items
+  return Option.from(firstItem)
+}
+
+getFirstItem([]) // None
+getFirstItem([1]) // Some
+```
+
+### Result
+
+An Result represent the potential success or failure of an operation. They provide safe ways for you to access and operate on these potentially absent values.
+
+A Result representing a success is called a Success.
+A Result representing a failure is called a Failure.
+
+#### Examples
+
+Please see the source code and test files for further documentation usage examples.
+
+##### Creating a Success Result
+```ts
+// Results.success will create a Success
+// no matter what value you pass to it.
+const result = Result.success(0) // `result` is a Success
+// or Result.some(0)
+
+const newResult = result.map((value) => value + 10)
+
+// Check if newResult is a Success
+newResult.isSuccess() // true
+
+// Check if newResult is a None
+newResult.isFailure() // false
+
+// In case of a Success, retrieve the value.
+// Otherwise, in case of a Failure, retrieve
+// the fallback (`20`).
+newResult.valueOr(20) // 10
+
+// In case of a Success, retrieve the value.
+// Otherwise, in case of a Failure, retrieve
+// the result of the passed in function.
+newResult.valueOrCompute(() => 20) // 10
+```
+
+##### Creating a Failure Result
+```ts
+// Results.failure will create a Failure
+// no matter what value you pass to it.
+const result = Result.failure('SOME_FAILURE') // `result` is a Failure
+
+const newResult = result.map((value) => value + 10)
+
+newResult.isSuccess() // false
+
+// Check if newResult is a Failure
+newResult.isFailure() // true
+
+// In case of a Success, retrieve the value.
+// Otherwise, in case of a Failure, retrieve
+// the fallback (`20`).
+newResult.valueOr(20) // 20
+
+// In case of a Success, retrieve the value.
+// Otherwise, in case of a Failure, retrieve
+// the result of the passed in function.
+newResult.valueOrCompute(() => 20) // 20
+```
+
+##### Returning an Result from a function
+```ts
+type FailureMessage = string
+
+const getFirstItem = <T>(items: T[]): Result<T, FailureMessage> => {
+  const [firstItem] = items
+
+  if (firstItem) {
+    return Result.success(firstItem)
+  }
+
+  return Result.failure('UNABLE_TO_FIND_FIRST_ITEM')
+}
+
+const failureResult = getFirstItem([])
+failureResult.value() // "UNABLE_TO_FIND_FIRST_ITEM"
+
+const successResult = getFirstItem([1]) // Success
+successResult.value() // 1
+```

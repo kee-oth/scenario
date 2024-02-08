@@ -9,6 +9,12 @@ type ResultContructorParams<S = never, F = never> = ({
   failureValue: F
 })
 
+/**
+ * The Result class represents the success or failure of an operation.
+ * Use it when you want to safely work with outcomes of operations that
+ *  _may_ or _may not_ succeed.
+ * @class
+ */
 export class Result<S, F> {
   declare private successValue: S
   declare private failureValue: F
