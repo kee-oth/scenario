@@ -90,7 +90,7 @@ export class Result<S, F> {
   // private cloneSuccessValue(): S {
   // }
 
-  debug(
+  inspect(
     shouldRun: (() => boolean) | boolean,
     fn: (result: Result<S, F>) => void,
   ): Result<S, F> {
@@ -167,7 +167,7 @@ export class Result<S, F> {
   `runEffect` lets you access the `Result` without
   doing anything to the `Result` itself.
 
-  This is similar to `debug` but `runEffect` will always
+  This is similar to `inspect` but `runEffect` will always
   run. This is useful for logging or other necessary
   side-effect work.
   */

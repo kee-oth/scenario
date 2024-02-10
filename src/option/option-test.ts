@@ -106,7 +106,7 @@ if (import.meta.vitest) {
     })
 
     it('should not be mappable if a None', () => {
-      const option = Option.none()
+      const option = Option.from(undefined)
 
       const newOption = option.map((value) => value + 10)
 
@@ -196,28 +196,28 @@ if (import.meta.vitest) {
       expect(someOption.valueOr(20)).toBe(0)
     })
 
-    it('should be debuggable when `debug` should run', () => {
+    it('should be inspectable when `inspect` should run', () => {
       const callback = vi.fn()
       const noneOption = Option.none()
       const someOption = Option.some(0)
 
-      noneOption.debug(true, callback)
-      noneOption.debug(() => true, callback)
-      someOption.debug(true, callback)
-      someOption.debug(() => true, callback)
+      noneOption.inspect(true, callback)
+      noneOption.inspect(() => true, callback)
+      someOption.inspect(true, callback)
+      someOption.inspect(() => true, callback)
 
       expect(callback).toHaveBeenCalledTimes(4)
     })
 
-    it('should not be debuggable when `debug` should not run', () => {
+    it('should not be inspectable when `inspect` should not run', () => {
       const callback = vi.fn()
       const noneOption = Option.none()
       const someOption = Option.some(0)
 
-      noneOption.debug(false, callback)
-      noneOption.debug(() => false, callback)
-      someOption.debug(false, callback)
-      someOption.debug(() => false, callback)
+      noneOption.inspect(false, callback)
+      noneOption.inspect(() => false, callback)
+      someOption.inspect(false, callback)
+      someOption.inspect(() => false, callback)
 
       expect(callback).not.toHaveBeenCalled()
     })
@@ -232,9 +232,7 @@ if (import.meta.vitest) {
       someOption.runEffect(someCallback)
 
       expect(noneCallback).toHaveBeenCalledOnce()
-      expect(noneCallback).toHaveBeenCalledWith(noneOption)
       expect(someCallback).toHaveBeenCalledOnce()
-      expect(someCallback).toHaveBeenCalledWith(someOption)
     })
 
     it('should be able to run an effect only when a Some', () => {

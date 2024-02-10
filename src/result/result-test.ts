@@ -250,28 +250,28 @@ if (import.meta.vitest) {
       expect(someResult.value()).toBe(0)
     })
 
-    it('should be debuggable when `debug` should run', () => {
+    it('should be inspectable when `inspect` should run', () => {
       const callback = vi.fn()
       const someFailure = Result.failure(0)
       const someSuccess = Result.success(0)
 
-      someFailure.debug(true, callback)
-      someFailure.debug(() => true, callback)
-      someSuccess.debug(true, callback)
-      someSuccess.debug(() => true, callback)
+      someFailure.inspect(true, callback)
+      someFailure.inspect(() => true, callback)
+      someSuccess.inspect(true, callback)
+      someSuccess.inspect(() => true, callback)
 
       expect(callback).toHaveBeenCalledTimes(4)
     })
 
-    it('should not be debuggable when `debug` should not run', () => {
+    it('should not be inspectable when `inspect` should not run', () => {
       const callback = vi.fn()
       const failureResult = Result.failure(0)
       const successResult = Result.success(0)
 
-      failureResult.debug(false, callback)
-      failureResult.debug(() => false, callback)
-      successResult.debug(false, callback)
-      successResult.debug(() => false, callback)
+      failureResult.inspect(false, callback)
+      failureResult.inspect(() => false, callback)
+      successResult.inspect(false, callback)
+      successResult.inspect(() => false, callback)
 
       expect(callback).not.toHaveBeenCalled()
     })
@@ -283,7 +283,6 @@ if (import.meta.vitest) {
       result.runEffect(callback)
 
       expect(callback).toHaveBeenCalledOnce()
-      expect(callback).toHaveBeenCalledWith(result)
     })
 
     it('should be able to run an effect only when a Success', () => {

@@ -18,6 +18,56 @@ Scenario is a Result and Option type library that lets you safely handle potenti
 
 Scenario has 0 dependencies and is very small (less than 1kb!).
 
+Scenario is useful for both TypeScript _and_ JavaScript projects because of its runtime functionality and semantics.
+
+### Why should I use it?
+
+Scenario's Option and Result types will help you avoid being in unexpected situations like accessing values that don't exist (or shouldn't exist) or treating some computation's result as a success when it really is a failure.
+
+A lot of similar projects offer their Result or Option type as a type alias for a TypeScript union. Something like this:
+
+```ts
+type Result<T, U> = Success<T> | Failure<U>
+type Option<V> = Some<V> | None
+```
+
+This strategy has the unfortunate drawback that Intellisense isn't guaranteed to show you the type alias – which can lead to noisy types.
+
+I.e. you may often see
+
+```ts
+Success<MySuccessType> | Failure<MyFailureType>
+// and
+Some<MySomeType> | None
+```
+
+instead of
+```ts
+Result<MySuccessType, MyFailureType>
+// and
+Option<MySomeType>
+```
+
+Scenario's Result and Option types are JavaScript classes so they have runtime semantics. This means you'll always see the more concise typing of
+```ts
+Result<MySuccessType, MyFailureType>
+// and
+Option<MySomeType>
+```
+
+## IMPORTANT
+
+For best ergonomics and typing, please ensure that your `tsconfig.json` file has these settings:
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "strictNullChecks": true
+  }
+}
+```
+
 ### Option
 
 An Option represent the potential abscense of a value. They provide safe ways for you to access and operate on these potentially absent values.
