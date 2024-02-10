@@ -151,13 +151,8 @@ if (import.meta.vitest) {
     it('should be errorable when None', () => {
       const option = Option.none<number>()
 
-      const errorableFunction = () => option.valueOrError(() => {
-        throw new Error('Some error!')
-      })
-
-      const errorableFunction2 = () => option.orError(() => {
-        throw new Error('Some error!')
-      })
+      const errorableFunction = () => option.valueOrThrowError(new Error('Some error!'))
+      const errorableFunction2 = () => option.orThrowError(new Error('Some error!'))
 
       expect(errorableFunction).toThrowError()
       expect(errorableFunction2).toThrowError()
@@ -166,13 +161,8 @@ if (import.meta.vitest) {
     it('should not be errorable when Some', () => {
       const option = Option.some(0)
 
-      const value = option.valueOrError(() => {
-        throw new Error('Some error!')
-      })
-
-      const sameOption = option.orError(() => {
-        throw new Error('Some error!')
-      })
+      const value = option.valueOrThrowError(new Error('Some error!'))
+      const sameOption = option.orThrowError(new Error('Some error!'))
 
       expect(value).toBe(0)
       expect(sameOption.isSome()).toBe(true)

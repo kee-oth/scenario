@@ -68,6 +68,10 @@ For best ergonomics and typing, please ensure that your `tsconfig.json` file has
 }
 ```
 
+### API Reference
+
+Please explore the API Reference at Stackblitz for a full picture of the library and usage.
+
 ### Option
 
 An Option represent the potential abscense of a value. They provide safe ways for you to access and operate on these potentially absent values.

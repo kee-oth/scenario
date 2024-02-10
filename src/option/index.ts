@@ -218,20 +218,17 @@ export class Option<V = never> {
    * const noneOption = Option.from(null);
    *
    * try {
-   *   noneOption.orError(() => {
-   *     throw new Error('Error occurred!'); // Will run
-   *   });
+   *   noneOption.orThrowError(new Error('Error occurred!'));
    * } catch (error) {
    *   console.error(error); // Will run
    * }
    * ```
    *
-   * {@link https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=Option%2Finstance-methods%2ForError.ts | View example on StackBlitz}
+   * {@link https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=Option%2Finstance-methods%2ForThrowError.ts | View example on StackBlitz}
    */
-  // TODO: change name to `orThrowError`
-  orError(fn: (option: Option<V>) => never): Option<V> {
+  orThrowError(errorToThrow: Error): Option<V> {
     if (this.isNone()) {
-      fn(this.clone())
+      throw errorToThrow
     }
 
     return this
@@ -285,6 +282,7 @@ export class Option<V = never> {
    * const someOption = Option.some(10)
    * someOption.reduce((context, value) => !!(context && value), 100) // true
    * ```
+   *
    * {@link https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=Option%2Finstance-methods%2Freduce.ts | View example on StackBlitz}
    */
   reduce<C, R>(
@@ -312,6 +310,7 @@ export class Option<V = never> {
    * const someOption = Option.from(100)
    * someOption.runEffect((value) => sendToLog(value)) // will run
    * ```
+   *
    * {@link https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=Option%2Finstance-methods%2FrunEffect.ts | View example on StackBlitz}
    */
   runEffect(effect: (result: Option<V>) => void): Option<V> {
@@ -334,6 +333,7 @@ export class Option<V = never> {
    * const someOption = Option.from(100)
    * someOption.runEffectWhenNone((value) => sendToLog(value)) // won't run
    * ```
+   *
    * {@link https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=Option%2Finstance-methods%2FrunEffectWhenNone.ts | View example on StackBlitz}
    */
   runEffectWhenNone(fn: () => void): Option<V> {
@@ -358,6 +358,7 @@ export class Option<V = never> {
    * const someOption = Option.from(100)
    * someOption.runEffectWhenSome((value) => sendToLog(value)) // will run
    * ```
+   *
    * {@link https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=Option%2Finstance-methods%2FrunEffectWhenSome.ts | View example on StackBlitz}
    */
   runEffectWhenSome(fn: (value: V) => void): Option<V> {
@@ -391,6 +392,7 @@ export class Option<V = never> {
    * });
    * newNoneOption.isNone() // true
    * ```
+   *
    * {@link https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=Option%2Finstance-methods%2Fvalidate.ts | View example on StackBlitz}
    */
   validate(
@@ -420,6 +422,7 @@ export class Option<V = never> {
    * const someOption = Option.from(100)
    * someOption.valueOr(200) // `100`
    * ```
+   *
    * {@link https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=Option%2Finstance-methods%2FvalueOr.ts | View example on StackBlitz}
    */
   valueOr(fallback: V): V {
@@ -441,6 +444,7 @@ export class Option<V = never> {
    * const someOption = Option.from(100)
    * someOption.valueOrUndefined() // `100`
    * ```
+   *
    * {@link https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=Option%2Finstance-methods%2FvalueOrUndefined.ts | View example on StackBlitz}
    */
   // TODO: Figure out how to get the callsite return type to be V if and only if a Some
@@ -463,6 +467,7 @@ export class Option<V = never> {
    * const someOption = Option.from(100)
    * someOption.valueOrCompute(() => 200) // `100`
    * ```
+   *
    * {@link https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=Option%2Finstance-methods%2FvalueOrCompute.ts | View example on StackBlitz}
    */
   valueOrCompute(computeFallback: () => V): V {
@@ -481,20 +486,17 @@ export class Option<V = never> {
    * const noneOption = Option.from(null);
    *
    * try {
-   *   const value = noneOption.valueOrError(() => {
-   *     throw new Error('Error occurred!'); // Will run
-   *   });
+   *   const value = noneOption.valueOrThrowError(new Error('Error occurred!'));
    * } catch (error) {
    *   console.error(error); // Will run
    * }
    * ```
    *
-   * {@link https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=Option%2Finstance-methods%valueOrError.ts | View example on StackBlitz}
+   * {@link https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=Option%2Finstance-methods%valueOrThrowError.ts | View example on StackBlitz}
    */
-  // TODO: change name to `valueOrThrowError`
-  valueOrError(fn: (option: Option<V>) => never): V {
+  valueOrThrowError(errorToThrow: Error): V {
     if (this.isNone()) {
-      fn(this.clone())
+      throw errorToThrow
     }
 
     return this.cloneValue()
@@ -510,13 +512,10 @@ export class Option<V = never> {
  * 2. should we offer `transform` specifically useful for going from Option<never> to Option<NewType>?
  *    with `reduce`, the user needs to explicitly pass back and Option. `transform` could call
  *    `Option.from(...)` with the result of a passed in function.
- * 3. Rework `...orError` functions to just take in an Error as an argument
- *    this is simpler and makes the use case more structured. Users can use `runEffectWhenNone`
- *    or `valueOrCompute` if they want to throw _and_ run other stuff. They can also call a function
- *    that returns an Error at the function's callsite.
- * 4. Break out methods to separate folders/files and group with own tests
+ * 3. Break out methods to separate folders/files and group with own tests
  *    Useful to have in separate files for linking purposes
  *    See for typing reference: https://stackoverflow.com/questions/42999765/add-a-method-to-an-existing-class-in-typescript
- * 5. Make this type correctly? `const shouldBeOptionNumber = Option.from<unknown>().recover(() => 10)`
+ * 4. Make this type correctly? `const shouldBeOptionNumber = Option.from<unknown>().recover(() => 10)`
  *    Should `from` default to `from<unknown>`, this lets users narrow the type later? Is there a good use case for this?
+ * 5. Make "Recipes" section in the API Reference (or in an entirely new Stackblitz)?
  */
