@@ -36,7 +36,36 @@ export class Result<S, F> {
 
   // Allows devs to create a Result from arbitrary data, depending on whether
   // the passed in value returns (undefined | null) or something else.
-  static fromNullish<T, U, D, V>(
+  static fromNullish<T, U>(
+    value: NonNullable<T> | null | undefined,
+    valueOfFailureIfNullish: U,
+  ): Result<T, U> {
+    if (value !== null && value !== undefined) {
+      return Result.success(value as T)
+    }
+
+    return Result.failure(valueOfFailureIfNullish)
+  }
+
+  static fromNullishCompute<U, D, R>(
+    fn: (context: D) => NonNullable<R> | null | undefined,
+    valueOfFailureIfNullish: U,
+    context: D,
+  ): Result<R, U>
+  static fromNullishCompute<U, D, R>(
+    fn: (context?: D) => NonNullable<R> | null | undefined,
+    valueOfFailureIfNullish: U,
+    context?: D,
+  ): Result<R, U> {
+    const value = fn(context) ?? null
+    if (value !== null) {
+      return Result.success(value)
+    }
+
+    return Result.failure(valueOfFailureIfNullish)
+  }
+
+  static fromNullishOG<T, U, D, V>(
     data: D,
     valueOfFailureIfNullish: U,
     transformer: (data: D) => V,
@@ -126,20 +155,17 @@ export class Result<S, F> {
     }
   }
 
-  // This is a way to shortcircuit and just throw an error
-  // when Failure. Otherwise we continue along per usual.
-  // Similar to Rust's `?` operator that sends errors upward.
-  orError(fn: (result: Result<S, F>) => never): Result<S, F> {
+  orThrowError(errorToThrow: Error): Result<S, F> {
     if (this.isFailure()) {
-      fn(this) // TODO: clone
+      throw errorToThrow
     }
 
     return this
   }
 
-  valueOrError(fn: (result: Result<S, F>) => never): S {
+  valueOrThrowError(errorToThrow: Error): S {
     if (this.isFailure()) {
-      fn(this) // TODO: clone
+      throw errorToThrow
     }
 
     return structuredClone(this.successValue)

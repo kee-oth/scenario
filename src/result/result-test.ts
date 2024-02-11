@@ -25,17 +25,36 @@ if (import.meta.vitest) {
     })
 
     it('should be able to create a Result from nullish value', () => {
-      const getTestData = (returnNull: boolean) => returnNull ? null : 0
+      const getTestData = (returnNull: boolean) => returnNull ? null : 'Success'
       // Using `null` as value given to `fromNullish`
-      const failureResult1 = Result.fromNullish(getTestData(true), 1, (data) => data ?? null)
+      const failureResult1 = Result.fromNullish(getTestData(true), 'Failure')
 
       // Using `undefined` as value given to `fromNullish`
-      const failureResult2 = Result.fromNullish(getTestData(true), 1, (data) => data ?? undefined)
+      const failureResult2 = Result.fromNullish(undefined, 'Failure')
 
-      const successResult = Result.fromNullish(getTestData(false), 1, (data) => data ?? null)
+      const successResult = Result.fromNullish('Hello' as string, 1)
 
       expect(successResult.isSuccess()).toBe(true)
-      expect(successResult.valueOr(1)).toBe(0)
+      expect(successResult.valueOr('Later')).toBe('Hello')
+
+      expect(failureResult1.isFailure()).toBe(true)
+      expect(failureResult1.value()).toBe('Failure')
+      expect(failureResult2.isFailure()).toBe(true)
+      expect(failureResult2.value()).toBe('Failure')
+    })
+
+    it('should be able to create a Result from nullish value', () => {
+      const getTestData = (returnNull: boolean) => returnNull ? null : 0
+      // Using `null` as value given to `fromNullishCompute`
+      const failureResult1 = Result.fromNullishCompute((context) => context ?? null, 1, getTestData(true))
+
+      // Using `undefined` as value given to `fromNullishCompute`
+      const failureResult2 = Result.fromNullishCompute((context) => context, 1, undefined)
+
+      const successResult = Result.fromNullishCompute((context) => context ?? null, 1, 'Hello')
+
+      expect(successResult.isSuccess()).toBe(true)
+      expect(successResult.valueOr('Later')).toBe('Hello')
 
       expect(failureResult1.isFailure()).toBe(true)
       expect(failureResult1.value()).toBe(1)
@@ -205,13 +224,9 @@ if (import.meta.vitest) {
     it('should be errorable when Failure', () => {
       const result = Result.failure(0)
 
-      const errorableFunction = () => result.valueOrError(() => {
-        throw new Error('Some error!')
-      })
+      const errorableFunction = () => result.valueOrThrowError(new Error('Some error!'))
 
-      const errorableFunction2 = () => result.orError(() => {
-        throw new Error('Some error!')
-      })
+      const errorableFunction2 = () => result.orThrowError(new Error('Some error!'))
 
       expect(errorableFunction).toThrowError()
       expect(errorableFunction2).toThrowError()
@@ -220,13 +235,9 @@ if (import.meta.vitest) {
     it('should not be errorable when Success', () => {
       const result = Result.success(0)
 
-      const value = result.valueOrError(() => {
-        throw new Error('Some error!')
-      })
+      const value = result.valueOrThrowError(new Error('Some error!'))
 
-      const successResult = result.orError(() => {
-        throw new Error('Some error!')
-      })
+      const successResult = result.orThrowError(new Error('Some error!'))
 
       expect(value).toBe(0)
       expect(successResult.isSuccess()).toBe(true)

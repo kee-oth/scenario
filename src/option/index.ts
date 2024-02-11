@@ -1,3 +1,23 @@
+class Some<V> {
+  declare value: V
+
+  constructor(value: V) {
+    this.value = structuredClone(value)
+  }
+
+  getValue() {
+    return structuredClone(this.value)
+  }
+}
+
+class None {
+  declare value: never
+
+  getValue() {
+    return null
+  }
+}
+
 /**
  * The Option class represents the prescense or absence of a value.
  * Use it when you want to safely work with data that _may_ or
@@ -5,21 +25,23 @@
  * @class
  */
 export class Option<V = never> {
-  private currentValue: V
+  private currentValue: Some<NonNullable<V>> | None
 
   private constructor(value?: V) {
-    // If we pass in `undefined` or `null`, we want to set `currentValue` to `null`.
-    // That way, other useful falsey values like empty string and `0` can still
-    // be used as the `currentValue`
-    this.currentValue = value ?? null as V
+    const shouldBeNone = value === null || value === undefined
+    if (shouldBeNone) {
+      this.currentValue = new None()
+    } else {
+      this.currentValue = new Some(value)
+    }
   }
 
   private clone(): Option<V> {
-    return new Option(this.cloneValue())
+    return new Option(this.cloneValue() ?? undefined)
   }
 
-  private cloneValue(): V {
-    return structuredClone(this.currentValue)
+  private cloneValue() {
+    return this.currentValue.getValue() as V
   }
 
   /**
@@ -158,8 +180,9 @@ export class Option<V = never> {
    *
    * {@link https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=Option%2Finstance-methods%2FisSome.ts | View example on StackBlitz}
    */
+  // Should this be NonNullable here? Some already is
   isSome(): this is Option<NonNullable<V>> {
-    return this.currentValue !== null
+    return this.currentValue instanceof Some
   }
 
   /**
@@ -178,7 +201,7 @@ export class Option<V = never> {
    * {@link https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=Option%2Finstance-methods%2FisNone.ts | View example on StackBlitz}
    */
   isNone(): this is Option<never> {
-    return this.currentValue === null
+    return this.currentValue instanceof None
   }
 
   /**
@@ -448,10 +471,17 @@ export class Option<V = never> {
    * {@link https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=Option%2Finstance-methods%2FvalueOrUndefined.ts | View example on StackBlitz}
    */
   // TODO: Figure out how to get the callsite return type to be V if and only if a Some
-  // valueOrUndefined(): V extends null | undefined ? null : V {
+  // Can't do `V extends null | undefined ? undefined : V` because Nones get mistyped into returning a value
+  // valueOrUndefined(): V extends null | undefined ? undefined : V {
   valueOrUndefined() {
-    return (this.isSome() ? this.cloneValue() : undefined)
+    return this.cloneValue() ?? undefined
   }
+
+  // TODO: this typing acts like it works but it doesn't, the condition always fails
+  // value(): typeof this.currentValue extends None ? undefined : V {
+  //   console.log('this.currentValue', this.currentValue)
+  //   return (this.isSome() ? this.cloneValue() : undefined) as typeof this.currentValue extends None ? undefined : V
+  // }
 
   /**
    * Returns the value if a Some, otherwise, returns the result
@@ -505,17 +535,13 @@ export class Option<V = never> {
 
 /**
  * THOUGHTS
- * 1. try `private currentValue: Some<V> : None`
- *    This lets us check if something is a Some or None in a controlled way, independent of actual value
- *    while still preseving the original type via Option's `V` generic.
- *    This may offer typing advantages for narrowing/guarding/return types.
- * 2. should we offer `transform` specifically useful for going from Option<never> to Option<NewType>?
+ * 1. should we offer `transform` specifically useful for going from Option<never> to Option<NewType>?
  *    with `reduce`, the user needs to explicitly pass back and Option. `transform` could call
  *    `Option.from(...)` with the result of a passed in function.
- * 3. Break out methods to separate folders/files and group with own tests
+ * 2. Break out methods to separate folders/files and group with own tests
  *    Useful to have in separate files for linking purposes
  *    See for typing reference: https://stackoverflow.com/questions/42999765/add-a-method-to-an-existing-class-in-typescript
- * 4. Make this type correctly? `const shouldBeOptionNumber = Option.from<unknown>().recover(() => 10)`
+ * 3. Make this type correctly? `const shouldBeOptionNumber = Option.from<unknown>().recover(() => 10)`
  *    Should `from` default to `from<unknown>`, this lets users narrow the type later? Is there a good use case for this?
- * 5. Make "Recipes" section in the API Reference (or in an entirely new Stackblitz)?
+ * 4. Make "Recipes" section in the API Reference (or in an entirely new Stackblitz)?
  */

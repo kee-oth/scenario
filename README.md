@@ -20,6 +20,10 @@ Scenario has 0 dependencies and is very small (less than 1kb!).
 
 Scenario is useful for both TypeScript _and_ JavaScript projects because of its runtime functionality and semantics.
 
+### API Reference
+
+Please explore the [API Reference at Stackblitz](https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=index.ts) for a full picture of the library and usage.
+
 ### Why should I use it?
 
 Scenario's Option and Result types will help you avoid being in unexpected situations like accessing values that don't exist (or shouldn't exist) or treating some computation's result as a success when it really is a failure.
@@ -67,10 +71,6 @@ For best ergonomics and typing, please ensure that your `tsconfig.json` file has
   }
 }
 ```
-
-### API Reference
-
-Please explore the API Reference at Stackblitz for a full picture of the library and usage.
 
 ### Option
 
