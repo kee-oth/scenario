@@ -127,7 +127,7 @@ export class Result<S, F> {
 
   map<NewS>(mapper: (successValue: S) => NewS): Result<NewS, F> {
     if (this.isSuccess()) {
-      return Result.success(mapper(structuredClone(this.successValue)))
+      return Result.success(mapper(this.successValue))
     } else {
       return Result.failure(this.failureValue)
     }
@@ -135,7 +135,7 @@ export class Result<S, F> {
 
   mapFailure<NewF>(mapper: (failureValue: F) => NewF): Result<S, NewF> {
     if (this.isFailure()) {
-      return Result.failure(mapper(structuredClone(this.failureValue)))
+      return Result.failure(mapper(this.failureValue))
     } else {
       return Result.success(this.successValue)
     }
@@ -154,7 +154,7 @@ export class Result<S, F> {
       throw errorToThrow
     }
 
-    return structuredClone(this.successValue)
+    return this.successValue
   }
 
   recover(
@@ -164,14 +164,14 @@ export class Result<S, F> {
       return this
     }
 
-    return Result.success(recoverWith(structuredClone(this.failureValue)))
+    return Result.success(recoverWith(this.failureValue))
   }
 
   reduce<C, R>(
     reducer: (context: C, result: Result<S, F>) => R,
     context: C,
   ): R {
-    const newResult = this.isSuccess() ? Result.success(structuredClone(this.successValue)) : Result.failure(structuredClone(this.failureValue))
+    const newResult = this.isSuccess() ? Result.success(this.successValue) : Result.failure(this.failureValue)
     return reducer(context, newResult)
   }
 
@@ -184,13 +184,13 @@ export class Result<S, F> {
   side-effect work.
   */
   runEffect(effect: (result: Result<S, F>) => void): Result<S, F> {
-    effect(structuredClone(this))
+    effect(this)
     return this
   }
 
   runEffectWhenFailure(effect: (failureValue: F) => void): Result<S, F> {
     if (this.isFailure()) {
-      effect(structuredClone(this.failureValue))
+      effect(this.failureValue)
     }
     return this
   }
@@ -201,7 +201,7 @@ export class Result<S, F> {
   */
   runEffectWhenSuccess(effect: (successValue: S) => void): Result<S, F> {
     if (this.isSuccess()) {
-      effect(structuredClone(this.successValue))
+      effect(this.successValue)
     }
     return this
   }
@@ -214,7 +214,7 @@ export class Result<S, F> {
       return this
     }
 
-    if (validator(structuredClone(this.successValue))) {
+    if (validator(this.successValue)) {
       return this
     }
 

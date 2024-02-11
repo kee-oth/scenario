@@ -309,7 +309,10 @@ if (import.meta.vitest) {
       const callback = vi.fn()
       const result = Result.failure(0)
 
-      result.runEffectWhenFailure(callback)
+      result.runEffectWhenFailure(() => {
+        console.log('hey')
+        callback()
+      })
 
       expect(callback).toHaveBeenCalledOnce()
     })
