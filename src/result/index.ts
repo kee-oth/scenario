@@ -65,20 +65,6 @@ export class Result<S, F> {
     return Result.failure(valueOfFailureIfNullish)
   }
 
-  static fromNullishOG<T, U, D, V>(
-    data: D,
-    valueOfFailureIfNullish: U,
-    transformer: (data: D) => V,
-  ): Result<T, U> {
-    const value = transformer(data) ?? null
-    if (value !== null) {
-      return Result.success(value as T)
-    }
-
-    return Result.failure(valueOfFailureIfNullish)
-  }
-
-  // TODO: test
   static fromValidator<T, U>(
     validator: (valueIfSuccess: T) => boolean,
     valueIfSuccess: T,
