@@ -20,9 +20,16 @@ Scenario has 0 dependencies and is very small (less than 1kb!).
 
 Scenario is useful for both TypeScript _and_ JavaScript projects because of its runtime functionality and semantics.
 
+## Installation
+```bash
+npm add @keeoth/scenario
+yarn add @keeoth/scenario
+pnpm add @keeoth/scenario
+```
+
 ### API Reference
 
-Please explore the [API Reference at Stackblitz](https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=index.ts) for a full picture of the library and usage.
+Please explore the [API Reference at Stackblitz](https://stackblitz.com/edit/typescript-fbykvu?devToolsHeight=100&file=index.ts) for a full picture of the library and usage (work in progress!).
 
 ### Why should I use it?
 

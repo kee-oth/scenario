@@ -310,7 +310,6 @@ if (import.meta.vitest) {
       const result = Result.failure(0)
 
       result.runEffectWhenFailure(() => {
-        console.log('hey')
         callback()
       })
 
