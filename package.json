@@ -29,7 +29,7 @@
     "@antfu/eslint-config": "^2.6.3",
     "@types/node": "^20.11.5",
     "eslint": "^8.56.0",
-    "husky": "^9.0.6",
+    "husky": "^9.0.11",
     "lint-staged": "^15.2.0",
     "typescript": "^5.3.3",
     "vite": "^5.0.12",
